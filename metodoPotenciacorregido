@@ -1,0 +1,211 @@
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+import random
+
+def rayleigh(A,v):
+    return (np.transpose(v) @ A @ v) / (np.transpose(v) @ v)
+    
+def metodoDeLaPotencia(A,k):
+    v = np.random.rand(A.shape[0],1)
+    autovalor = np.zeros(shape = k)
+    for i in range(k):
+        Av = A @ v
+        v = Av / np.linalg.norm(Av)
+        autovalor[i]=rayleigh(A,v)
+        
+    return autovalor
+    
+# Chequeamos si funciona
+
+P = np.array([[0.9,0.15,0.25],[0.075,0.8,0.25],[0.025,0.05,0.5]])
+
+
+print(metodoDeLaPotencia (P,100))
+
+e = np.linalg.eigvals(P)
+print(e[0])
+print (e[1])
+print(e)
+
+
+def matrizA(n):
+    a = np.random.rand(n,n)
+    return a
+    
+def matrizB(n):
+    b = np.random.rand(n,n)
+    for i in range(n):
+        for j in range (n):
+            if i>j:
+                b[i][j]=b[j][i]
+                
+    return b
+#corregido
+
+
+def matrizC(n):
+    c = matrizB(n)
+    for i in range(n):
+                c[i][i]= c[i][i] + 100
+                
+    return c
+#corregido
+
+def matrizD(n):
+    d = matrizB(n)
+    for i in range(n):
+                d[i][i]= d[i][i] + 1000
+                
+    return d
+#corregido
+
+#Creamos las matrices de 100x100
+
+random.seed(14)
+matriza = matrizA(100)
+matrizb = matrizB(100)
+matrizc = matrizC(100)
+matrizd = matrizD(100)
+
+vectorA100 = np.arange(101)
+
+metodoDeLaPotenciaA = metodoDeLaPotencia(matriza,100)
+metodoDeLaPotenciaB = metodoDeLaPotencia(matrizb,100)
+metodoDeLaPotenciaC = metodoDeLaPotencia(matrizc,100)
+metodoDeLaPotenciaD = metodoDeLaPotencia(matrizd,100)
+
+
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+
+axs[0][0].plot(metodoDeLaPotenciaA,c='#43777a')
+axs[0][0].set_title('Matriz A',size=8)
+axs[0][0].set_ylabel("Valores",size=8)
+axs[0][0].set_xlabel("Iteraciones",size=8)
+
+
+axs[0][1].plot(metodoDeLaPotenciaB,c='#43777a')
+axs[0][1].set_title('Matriz B',size=8)
+axs[0][1].set_ylabel("Valores",size=8)
+axs[0][1].set_xlabel("Iteraciones",size=8)
+
+axs[1][0].plot(metodoDeLaPotenciaC,c='#43777a')
+axs[1][0].set_title('Matriz C',size=8)
+axs[1][0].set_ylabel("Valores",size=8)
+axs[1][0].set_xlabel("Iteraciones",size=8)
+
+axs[1][1].plot(metodoDeLaPotenciaD,c='#43777a')
+axs[1][1].set_title('Matriz D',size=8)
+axs[1][1].set_ylabel("Valores",size=8)
+axs[1][1].set_xlabel("Iteraciones",size=8)
+
+plt.subplots_adjust(wspace=0.4)
+
+Podemos notar que en los casos de la matriz C y la matriz D, en donde los elementos de la diagonal fueron incrementados, a medida que el numero por el cual es incrementado esta diagonal es mayor, el metodo converge mas lento que en los otros casos. 
+El valor de los autovalores, a medida que se incrementan los numeros de las diagonales, es mayor. Como podemos notar en los casos de las matrices C y D. El metodo en estos casos, converge mas lento.
+A raiz de que los autovalores de las matrices C y D, lo que podemos llegar a deducir es que, como el autovalor de mayor modulo es mayor, entonces, el algoritmo tarda mas en aproximarse a ese valor. En los casos en el cual la matriz es simetrica con todos los elementos de la matriz perteneciente a los reales, los autovalores son reales.
+
+
+def errores(A,k):
+    autovalores = np.linalg.eigvals(A)
+    mayorAutovalor = np.max(np.abs(autovalores))
+    aproximacion = metodoDeLaPotencia(A,k)
+    vectorErrores = []
+    
+    for i in range(k):
+        vectorErrores.append(np.log10(abs(mayorAutovalor - aproximacion[i])))
+        
+    return vectorErrores
+    
+erroresA = errores(matriza,100)
+erroresB = errores(matrizb,100)
+erroresC = errores(matrizc,100)
+erroresD = errores(matrizd,100)
+
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+
+axs[0][0].plot(erroresA,c='#43777a')
+axs[0][0].set_title('Matriz A',size=8)
+axs[0][0].set_ylabel("Errores",size=8)
+axs[0][0].set_xlabel("Iteraciones",size=8)
+
+
+axs[0][1].plot(erroresB,c='#43777a')
+axs[0][1].set_title('Matriz B',size=8)
+axs[0][1].set_ylabel("Errores",size=8)
+axs[0][1].set_xlabel("Iteraciones",size=8)
+
+axs[1][0].plot(erroresC,c='#43777a')
+axs[1][0].set_title('Matriz C',size=8)
+axs[1][0].set_ylabel("Errores",size=8)
+axs[1][0].set_xlabel("Iteraciones",size=8)
+
+axs[1][1].plot(erroresD,c='#43777a')
+axs[1][1].set_title('Matriz D',size=8)
+axs[1][1].set_ylabel("Errores",size=8)
+axs[1][1].set_xlabel("Iteraciones",size=8)
+
+plt.subplots_adjust(wspace=0.4)
+
+def pendiente(A,k):
+    
+    autovalores = np.linalg.eigvals(A)
+    mayor1 = sorted(abs(autovalores),reverse=True)[0]
+    mayor2 = sorted(abs(autovalores),reverse=True)[1]
+    pend = 2 * np.log10(mayor2/mayor1)
+    funcion = []
+    e0 = errores(A,k)[0]
+    
+    for i in range(k):
+        funcion.append(pend * i + e0)
+        
+    return funcion
+
+#corregido
+
+pendienteA = pendiente(matriza,100)
+pendienteB = pendiente(matrizb,100)
+pendienteC = pendiente(matrizc,100)
+pendienteD = pendiente(matrizd,100)
+
+pendienteA = pendiente(matriza,100)
+pendienteB = pendiente(matrizb,100)
+pendienteC = pendiente(matrizc,100)
+pendienteD = pendiente(matrizd,100)
+
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+
+axs[0][0].plot(erroresA)
+axs[0][0].plot(pendienteA)
+axs[0][0].set_title('Matriz A',size=8)
+axs[0][0].set_ylabel("Valores",size=8)
+axs[0][0].set_xlabel("Iteraciones",size=8)
+axs[0][0].legend(["Errores", "Recta"], loc=0, frameon=True)
+
+
+axs[0][1].plot(erroresB)
+axs[0][1].plot(pendienteB)
+axs[0][1].set_title('Matriz B',size=8)
+axs[0][1].set_ylabel("Valores",size=8)
+axs[0][1].set_xlabel("Iteraciones",size=8)
+axs[0][1].legend(["Errores", "Recta"], loc=0, frameon=True)
+
+axs[1][0].plot(erroresC)
+axs[1][0].plot(pendienteC)
+axs[1][0].set_title('Matriz C',size=8)
+axs[1][0].set_ylabel("Valores",size=8)
+axs[1][0].set_xlabel("Iteraciones",size=8)
+axs[1][0].legend(["Errores", "Recta"], loc=0, frameon=True)
+
+axs[1][1].plot(erroresD)
+axs[1][1].plot(pendienteD)
+axs[1][1].set_title('Matriz D',size=8)
+axs[1][1].set_ylabel("Valores",size=8)
+axs[1][1].set_xlabel("Iteraciones",size=8)
+axs[1][1].legend(["Errores", "Recta"], loc=0, frameon=True)
+
+
+
+plt.subplots_adjust(wspace=0.4)
+
+En estos graficos se puede notar como claramente, a medida que los elementos de la diagonal en la matriz se hacen mas grandes, la pendiente y los errores se van acercando cada vez mas y mas, y estos se empiezan a parecer mucho mas a la pendiente. Esto se puede deber a que los autovalores de las matrices en los que se le incrementa la diagonal, sus autovalores son mas grandes. Podemos tambien decir, que, cuando los autovalores de la matriz son mayores, como sucede en el caso de las matrices C y D, la fucnion errores y la funcion pendiente se van acercando cada vez mas.
